@@ -1,56 +1,33 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 
-import { Dish }              from '../shared/dish';
+import { Dish }                      from '../shared/dish';
+// import { DISHES }                    from '../shared/dishes';
 
-const DISHES: Dish[] = [
-  {
-    name:'Uthappizza',
-    image: '/assets/images/uthappizza.png',
-    category: 'mains',
-    label:'Hot',
-    price:'4.99',
-    description:'A unique combination of Indian Uthappam (pancake) and Italian pizza, topped with Cerignola olives, ripe vine cherry tomatoes, Vidalia onion, Guntur chillies and Buffalo Paneer.'
-  },
-  {
-    name:'Zucchipakoda',
-    image: '/assets/images/zucchipakoda.png',
-    category: 'appetizer',
-    label:'',
-    price:'1.99',
-    description:'Deep fried Zucchini coated with mildly spiced Chickpea flour batter accompanied with a sweet-tangy tamarind sauce'
-  },
-  {
-    name:'Vadonut',
-    image: '/assets/images/vadonut.png',
-    category: 'appetizer',
-    label:'New',
-    price:'1.99',
-    description:'A quintessential ConFusion experience, is it a vada or is it a donut?'
-  },   
-  {
-    name:'ElaiCheese Cake',
-    image: '/assets/images/elaicheesecake.png',
-    category: 'dessert',
-    label:'',
-    price:'2.99',
-    description:'A delectable, semi-sweet New York Style Cheese Cake, with Graham cracker crust and spiced with Indian cardamoms'
-  }
-];
+import { DishService }               from '../services/dish.service';
+import { flyInOut, expand }           from '../animations/app.animation';
+
 
 @Component({
   selector: 'menu',
   templateUrl: './menu.component.html',
-  styleUrls: ['./menu.component.scss']
+  styleUrls: ['./menu.component.scss'],
+  animations: [
+    expand()
+  ]
 })
 export class MenuComponent implements OnInit {
 
-  dishes = DISHES;
+  dishes: Dish[];
+  errMess: string;
+  // selectedDish: Dish;
 
-  selectedDish = DISHES[0];
-
-  constructor() { }
-
+  constructor(private dishService: DishService,
+              @Inject('BaseURL') private BaseURL) {}
+  
   ngOnInit() {
+    this.dishService.getDishes()
+        .subscribe(dishes => this.dishes = dishes,
+          errMess => this.errMess = <any>errMess);
   }
 
 }

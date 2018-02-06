@@ -1,60 +1,155 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
+import { FormBuilder, FormGroup, 
+         Validators, FormControl }  from '@angular/forms';
 
-import { Comment }              from '../shared/comment';
+import { MatSliderModule }          from '@angular/material/slider';
 
+import { Params, ActivatedRoute }   from '@angular/router';
+import { Location }                 from '@angular/common';
 
-const DISH = {
-  name: 'Uthappizza',
-  image: '/assets/images/uthappizza.png',
-  category: 'mains',
-  label: 'Hot',
-  price: '4.99',
-  description: 'A unique combination of Indian Uthappam (pancake) and Italian pizza, topped with Cerignola olives, ripe vine cherry tomatoes, Vidalia onion, Guntur chillies and Buffalo Paneer.',
-  comments: [
-    {
-      rating: 5,
-      comment: "Imagine all the eatables, living in conFusion!",
-      author: "John Lemon",
-      date: "2012-10-16T17:57:28.556094Z"
-    },
-    {
-      rating: 4,
-      comment: "Sends anyone to heaven, I wish I could get my mother-in-law to eat it!",
-      author: "Paul McVites",
-      date: "2014-09-05T17:57:28.556094Z"
-    },
-    {
-      rating: 3,
-      comment: "Eat it, just eat it!",
-      author: "Michael Jaikishan",
-      date: "2015-02-13T17:57:28.556094Z"
-    },
-    {
-      rating: 4,
-      comment: "Ultimate, Reaching for the stars!",
-      author: "Ringo Starry",
-      date: "2013-12-02T17:57:28.556094Z"
-    },
-    {
-      rating: 2,
-      comment: "It's your birthday, we're gonna party!",
-      author: "25 Cent",
-      date: "2011-12-02T17:57:28.556094Z"
-    }
-  ]
-};
+import { Comment }                  from '../shared/comment';
+import { Dish }                     from '../shared/dish';
+import { DishService }              from '../services/dish.service'
+import { visibility, flyInOut, 
+         expand }                   from '../animations/app.animation';
+
+import 'rxjs/add/operator/switchMap';
+
 
 @Component({
   selector: 'dishdetail',
   templateUrl: './dishdetail.component.html',
-  styleUrls: ['./dishdetail.component.scss']
+  styleUrls: ['./dishdetail.component.scss'],
+  host: {
+    '[@flyInOut]': 'true',
+    'style': 'display: block;'
+  },
+  animations: [
+    flyInOut(),
+    visibility(),
+    expand()
+  ]
 })
+
 export class DishdetailComponent implements OnInit {
-  dish = DISH;
-  comments: Comment[] = this.dish.comments;
+  
+  dish: Dish;
+  dishcopy? : Dish =  null;
+  dishIds: number[];
+  prev: number;
+  next: number; 
+  commentForm: FormGroup;
+  comment: Comment;
+  errMess: string;
+  visibility = 'shown';
 
-  constructor() { }
+  formErrors = {
+    'author': '',
+    'rating': '',
+    'comment': ''
+  };
 
-  ngOnInit() {}
+  validationMessages = {
+    'author': {
+      'required':      'Author name is required.',
+      'minlength':     'Authorname must be at least 2 characters long.',
+    },
+    'comment': {
+      'required':      'Comment is required.',
+      'minlength':     'Comment must be at least 5 characters long.',
+    },
+    'rating': {
+      'required':      'Rating is required.',
+    },
+  };
+
+  constructor(private dishservice: DishService,
+              private route: ActivatedRoute,
+              private location: Location,
+              private fb: FormBuilder,
+              @Inject('BaseURL') private BaseURL) { }
+
+  ngOnInit() {
+    this.createComment();  
+
+    this.dishservice.getDishIds().subscribe(dishIds => {
+      this.dishIds = dishIds;
+    });
+    this.route.params
+        .switchMap((params: Params) => { 
+          this.visibility = 'hidden'; 
+          return this.dishservice.getDish(+params['id']);
+        })
+        .subscribe(
+          dish => { 
+            this.dish = dish; 
+            this.dishcopy = dish; 
+            this.setPrevNext(dish.id); 
+            this.visibility = 'shown'; 
+          },
+          errmess => { 
+            this.dish = null;
+            this.errMess = <any>errmess; 
+          }
+        );
+  }
+
+  setPrevNext(dishId: number) {
+    if(!this.dishIds) return;
+    let index = this.dishIds.indexOf(dishId);
+    this.prev = this.dishIds[(this.dishIds.length + index - 1) % this.dishIds.length];
+    this.next = this.dishIds[(this.dishIds.length + index + 1) % this.dishIds.length];
+  }
+
+  goBack(): void {
+    this.location.back();
+  }
+
+  createComment(): void {
+    this.commentForm = this.fb.group({
+      author: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(25)] ],
+      rating: [5 , [Validators.required]],
+      comment: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50)] ],
+      date: new Date()
+    });
+
+    this.commentForm.valueChanges
+        .subscribe(data => this.onValueChanged(data));
+
+    this.onValueChanged(); // (re)set validation messages now
+  }
+
+  onValueChanged(data?: any) { 
+    if (!this.commentForm) { return; }
+    const form = this.commentForm;
+    for (const field in this.formErrors) {
+      // clear previous error message (if any)
+      this.formErrors[field] = '';
+      const control = form.get(field); 
+      if (control && control.dirty && !control.valid) {
+        const messages = this.validationMessages[field];
+        for (const key in control.errors) {
+          this.formErrors[field] += messages[key] + ' ';
+        }
+      }
+    } 
+  }
+
+  onSubmit() {
+    this.comment = this.commentForm.value;
+    this.comment.date = new Date().toISOString();
+    this.dishcopy.comments.push(this.comment);
+    console.log('dishdetail rest', this.dishcopy);
+    this.dishcopy['save']()
+        .subscribe(dish => {
+          this.dish = dish;
+          });
+    
+    this.commentForm.reset({
+      author: '',
+      comment: '',
+      rating: 5
+    });
+  }
 
 }
