@@ -1,11 +1,8 @@
-import { Component, OnInit, Inject }            from '@angular/core';
+import { Component, OnInit }                    from '@angular/core';
 import { FormBuilder, FormGroup, Validators }   from '@angular/forms';
 
-import { Params, ActivatedRoute }               from '@angular/router';
-import { Location }                             from '@angular/common';
-
 import { Feedback, ContactType }                from '../shared/feedback';
-import { flyInOut, visibility, expand }                             from '../animations/app.animation';
+import { flyInOut, visibility, expand }         from '../animations/app.animation';
 
 import { FeedbackService }                      from '../services/feedback.service';
 
@@ -26,12 +23,12 @@ import { FeedbackService }                      from '../services/feedback.servi
 export class ContactComponent implements OnInit {
 
   feedbackForm: FormGroup;
-  feedback: any; 
+  feedback: Feedback; 
   feedbackErrmess: string;
   submissionResult: Feedback;
   contactType = ContactType;
-  submission: boolean = false;
-  showSubmitted: boolean = false;
+  submission= true;
+  showSubmitted = false;
   visibility = 'shown';
 
   formErrors = {
@@ -63,8 +60,7 @@ export class ContactComponent implements OnInit {
   };
 
   constructor(private feedbackservice: FeedbackService,
-              private fb: FormBuilder,
-              private route: ActivatedRoute) {
+              private fb: FormBuilder) {
     this.createForm();
   }
 
@@ -84,6 +80,8 @@ export class ContactComponent implements OnInit {
 
     this.feedbackForm.valueChanges
         .subscribe(data => this.onValueChanged(data));
+
+    this.onValueChanged();
   }
 
   onValueChanged(data?: any) {

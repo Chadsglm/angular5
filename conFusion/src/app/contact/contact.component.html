@@ -47,7 +47,6 @@
       [hidden]="showSubmitted === true" 
       [formGroup]="feedbackForm" 
       [@visibility]="visibility" 
-      (ngSubmit)="onSubmit()"
       [@expand]>
       <p>
         <mat-input-container class="half-width" dividerColor="{{(formErrors.firstname) ? 'warn' : 'primary'}}">
@@ -102,13 +101,14 @@
           <textarea matInput formControlName="message" placeholder="Your Feedback" rows=12></textarea>
         </mat-input-container>
       </p>
-      <button type="submit" mat-button class="background-primary text-floral-white" (click)="onSubmit()" [disabled]="feedbackForm.invalid">
+      <button type="button" mat-button 
+      class="background-primary text-floral-white" (click)="onSubmit()" 
+      [disabled]="feedbackForm.invalid">
         Submit
       </button>
     </form>
     <div [hidden]="submission === false || errMess">
-      <h4>Submitting Form</h4>
-      <mat-spinner></mat-spinner>
+      <mat-spinner></mat-spinner> <h4>Submitting Form</h4>
     </div>
     <div *ngIf="submissionResult" [@expand]>
       <mat-list>
