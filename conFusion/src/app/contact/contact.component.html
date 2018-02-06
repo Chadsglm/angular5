@@ -1,6 +1,4 @@
-<div class="container"
-     fxLayout="column"
-     fxLayoutGap="10px">
+<div class="container" fxLayout="column" fxLayoutGap="10px">
 
   <div fxFlex>
     <div>
@@ -10,48 +8,56 @@
   </div>
 
   <div fxFlex>
-    <h3>Location Information</h3> 
+    <h3>Location Information</h3>
     <div fxLayout="column" fxLayout.gt-sm="row">
       <div fxFlex="50" fxFlexOffset="20px">
         <h4>Our Address</h4>
         <address>
-          121, Clear Water Bay Road<br>
-          Clear Water Bay, Kowloon<br>
-          HONG KONG<br>
-          <i class="fa fa-phone"></i>: +852 1234 5678<br>
-          <i class="fa fa-fax"></i>: +852 8765 4321<br>
-          <i class="fa fa-envelope"></i>: 
-            <a href="mailto:confusion@food.net">confusion@food.net</a>
+          121, Clear Water Bay Road
+          <br> Clear Water Bay, Kowloon
+          <br> HONG KONG
+          <br>
+          <i class="fa fa-phone"></i>: +852 1234 5678
+          <br>
+          <i class="fa fa-fax"></i>: +852 8765 4321
+          <br>
+          <i class="fa fa-envelope"></i>:
+          <a href="mailto:confusion@food.net">confusion@food.net</a>
         </address>
         <p></p>
-          <div>
-            <a mat-raised-button href="tel:+85212345678"><i class="fa fa-phone"></i> Call</a>
-            <a mat-raised-button><i class="fa fa-skype"></i> Skype</a>
-            <a mat-raised-button href="mailto:confusion@food.net"><i class="fa fa-envelope-o"></i> Email</a>
-          </div>
+        <div>
+          <a mat-raised-button href="tel:+85212345678">
+            <i class="fa fa-phone"></i> Call</a>
+          <a mat-raised-button>
+            <i class="fa fa-skype"></i> Skype</a>
+          <a mat-raised-button href="mailto:confusion@food.net">
+            <i class="fa fa-envelope-o"></i> Email</a>
+        </div>
       </div>
       <div fxFlex="40">
-          <h4>Map of our Location</h4>
+        <h4>Map of our Location</h4>
       </div>
     </div>
   </div>
 
   <div fxFlex fxFlexOffset="20px" class="form-size">
     <h3>Send us your Feedback</h3>
-    <p>{{ feedbackForm.value | json }} {{ feedbackForm.status | json }}</p>
-
-    <form novalidate [formGroup]="feedbackForm" (ngSubmit)="onSubmit()">
+     
+    <form novalidate 
+      [hidden]="showSubmitted === true" 
+      [formGroup]="feedbackForm" 
+      [@visibility]="visibility" 
+      (ngSubmit)="onSubmit()"
+      [@expand]>
       <p>
-        <mat-input-container class="half-width"
-         dividerColor="{{(formErrors.firstname) ? 'warn' : 'primary'}}">
+        <mat-input-container class="half-width" dividerColor="{{(formErrors.firstname) ? 'warn' : 'primary'}}">
           <input matInput formControlName="firstname" placeholder="First Name" type="text" required>
           <mat-hint>
             <span [hidden]="!(formErrors.firstname)">
               {{formErrors.firstname}}</span>
           </mat-hint>
         </mat-input-container>
-        <mat-input-container class="half-width"
-         dividerColor="{{(formErrors.lastname) ? 'warn' : 'primary'}}">
+        <mat-input-container class="half-width" dividerColor="{{(formErrors.lastname) ? 'warn' : 'primary'}}">
           <input matInput formControlName="lastname" placeholder="Last Name" type="text" required>
           <mat-hint>
             <span [hidden]="!(formErrors.lastname)">
@@ -60,16 +66,14 @@
         </mat-input-container>
       </p>
       <p>
-        <mat-input-container class="half-width"
-         dividerColor="{{(formErrors.telnum) ? 'warn' : 'primary'}}">
+        <mat-input-container class="half-width" dividerColor="{{(formErrors.telnum) ? 'warn' : 'primary'}}">
           <input matInput formControlName="telnum" placeholder="Tel. Number" type="tel" pattern="[0-9]*" required>
           <mat-hint>
             <span [hidden]="!(formErrors.telnum)">
               {{formErrors.telnum}}</span>
           </mat-hint>
         </mat-input-container>
-        <mat-input-container class="half-width"
-         dividerColor="{{(formErrors.email) ? 'warn' : 'primary'}}">
+        <mat-input-container class="half-width" dividerColor="{{(formErrors.email) ? 'warn' : 'primary'}}">
           <input matInput formControlName="email" placeholder="Email" type="email" email required>
           <mat-hint>
             <span [hidden]="!(formErrors.email)">
@@ -77,24 +81,48 @@
           </mat-hint>
         </mat-input-container>
       </p>
+
       <table class="form-size">
         <td>
-        <mat-slide-toggle formControlName="agree">May we contact you?</mat-slide-toggle>
+          <mat-slide-toggle formControlName="agree">May we contact you?</mat-slide-toggle>
         </td>
         <td>
-        <mat-select placeholder="How?" formControlName="contacttype">
-          <mat-option *ngFor="let ctype of contactType" [value]="ctype">
-            {{ ctype }}
-          </mat-option>
-        </mat-select>
+          <mat-form-field>
+            <mat-select placeholder="How?" formControlName="contacttype">
+              <mat-option *ngFor="let ctype of contactType" [value]="ctype">
+                {{ ctype }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
         </td>
-        </table>
+      </table>
+
       <p>
         <mat-input-container class="full-width">
           <textarea matInput formControlName="message" placeholder="Your Feedback" rows=12></textarea>
         </mat-input-container>
       </p>
-      <button type="submit" mat-button class="background-primary text-floral-white" [disabled]="feedbackForm.invalid">Submit</button>
+      <button type="submit" mat-button class="background-primary text-floral-white" (click)="onSubmit()" [disabled]="feedbackForm.invalid">
+        Submit
+      </button>
     </form>
+    <div [hidden]="submission === false || errMess">
+      <h4>Submitting Form</h4>
+      <mat-spinner></mat-spinner>
+    </div>
+    <div *ngIf="submissionResult" [@expand]>
+      <mat-list>
+        <h3>Your Submission</h3>
+        <mat-list-item>
+          <p matLine>First Name:{{ submissionResult.firstname }}</p>
+          <p matLine>Last Name:{{ submissionResult.lastname }}</p>
+          <p matLine>Tel. Number:{{ submissionResult.telnum }}</p>
+          <p matLine>Email:{{ submissionResult.email }}</p>
+          <p matLine>Contact You?:{{ submissionResult.agree }}</p>
+          <p matLine>How?:{{ submissionResult.contacttype }}</p>
+          <p matLine>Feedback:{{ submissionResult.message }}</p>
+        </mat-list-item>
+      </mat-list>
+    </div>
   </div>
 </div>

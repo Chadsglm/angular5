@@ -7,14 +7,14 @@
      fxLayoutGap.xs="0">
 
   
-  <div fxFlex="40" *ngIf="dish">
+  <div fxFlex="40" *ngIf="dish" [@visibility]="visibility" [@expand]>
     <mat-card>
       <mat-card-header>
         <mat-card-title>
           <h3>{{dish.name | uppercase}}</h3>
         </mat-card-title>
       </mat-card-header>
-      <img mat-card-image src={{dish.image}} alt={{dish.name}}>
+      <img mat-card-image src="{{BaseURL + dish.image}}" alt={{dish.name}}>
       <mat-card-content>
         <p>{{dish.description}}</p>
       </mat-card-content>
@@ -34,7 +34,7 @@
   </div>
 
 
-  <div fxFlex="40" *ngIf="dish" [formGroup]="commentForm"> 
+  <div fxFlex="40" *ngIf="dish" [formGroup]="commentForm" [@visibility]="visibility" [@expand]> 
     <mat-list>
       <h3>Comments</h3>
       <mat-list-item *ngFor="let comment of dish.comments">
@@ -65,14 +65,13 @@
       </mat-hint>
     </mat-input-container>
 
-    <section class="example-section">
-      <mat-slider min="1" formControlName="rating" required max="5" step="1" value="5" thumbLabel tickInterval="1">
-      </mat-slider>
-      <mat-hint>
-        <span [hidden]="!(formErrors.rating)" class="error">
-          {{formErrors.rating}}</span>
-      </mat-hint>
-    </section>
+    <mat-slider min="1" formControlName="rating" required max="5" step="1" 
+                value="5" thumbLabel tickInterval="1">
+    </mat-slider>
+    <mat-hint>
+      <span [hidden]="!(formErrors.rating)" class="error">
+        {{formErrors.rating}}</span>
+    </mat-hint>
 
     <mat-input-container >
       <textarea matInput formControlName="comment" placeholder="Your Comment" rows=8></textarea>
@@ -91,7 +90,11 @@
     </button>
   </div>
 
-  <div [hidden]= "dish">
+  <div [hidden]= "dish || errMess">
     <mat-spinner></mat-spinner> <h4>Looding ... Please Wait</h4>
+  </div>
+  <div *ngIf="errMess">
+    <h2>Error</h2>
+    <h4>{{errMess}}</h4>
   </div>
 </div>

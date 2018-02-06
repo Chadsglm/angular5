@@ -1,30 +1,33 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 
-import { Dish }              from '../shared/dish';
+import { Dish }                      from '../shared/dish';
+// import { DISHES }                    from '../shared/dishes';
 
-import { DishService }       from '../services/dish.service';
+import { DishService }               from '../services/dish.service';
+import { flyInOut, expand }           from '../animations/app.animation';
 
 
 @Component({
   selector: 'menu',
   templateUrl: './menu.component.html',
-  styleUrls: ['./menu.component.scss']
+  styleUrls: ['./menu.component.scss'],
+  animations: [
+    expand()
+  ]
 })
 export class MenuComponent implements OnInit {
 
   dishes: Dish[];
+  errMess: string;
+  // selectedDish: Dish;
 
-  selectedDish: Dish;
-
-  constructor(private dishService: DishService) {}
+  constructor(private dishService: DishService,
+              @Inject('BaseURL') private BaseURL) {}
   
   ngOnInit() {
     this.dishService.getDishes()
-        .subscribe(dishes => this.dishes = dishes);
-  }
-  
-  onSelect(dish: Dish) {
-    this.selectedDish = dish;
+        .subscribe(dishes => this.dishes = dishes,
+          errMess => this.errMess = <any>errMess);
   }
 
 }

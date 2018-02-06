@@ -22,6 +22,13 @@ module.exports = function (config) {
     angularCli: {
       environment: 'dev'
     },
+    files: [
+      {
+        pattern: './src/test.ts', watched: false
+      },
+      'node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css',
+      'node_modules/hammerjs/hammer.min.js'
+    ],
     reporters: ['progress', 'kjhtml'],
     port: 9876,
     colors: true,
